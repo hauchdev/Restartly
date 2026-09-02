@@ -1,11 +1,8 @@
 # Restartly
 
-[![Build](https://img.shields.io/github/actions/workflow/status/<OWNER>/<REPO>/build.yml?branch=main&label=build&logo=github)](https://github.com/<OWNER>/<REPO>/actions/workflows/build.yml)
-[![Release](https://img.shields.io/github/v/release/<OWNER>/<REPO>?logo=github&sort=semver)](https://github.com/<OWNER>/<REPO>/releases)
+[![Build](https://img.shields.io/github/actions/workflow/status/Hauchdev/Restartly/build.yml?branch=main&label=build&logo=github)](https://github.com/Hauchdev/Restartly/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/Hauchdev/Restartly?logo=github&sort=semver)](https://github.com/Hauchdev/Restartly/releases)
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-> **Note:** the badge links above point to `<OWNER>/<REPO>`; replace them with
-the actual repository location after the first push.
 
 **The central restart management platform for Minecraft servers.**
 
