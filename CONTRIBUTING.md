@@ -56,6 +56,30 @@ add the method to `RestartPlatform` and implement it in both loaders.
 > `git update-index --chmod=+x gradlew` before committing avoids
 > `Permission denied` errors for contributors on Linux/macOS.
 
+## Releasing
+
+Releases are driven by git tags (`vX.Y.Z`); the pipeline lives in
+`.github/workflows/release.yml` and is triggered automatically when the tag is
+pushed. To cut a release:
+
+1. Run `./scripts/release.sh <new-version>` (e.g. `./scripts/release.sh 1.1.0`).
+   It bumps `version=` in `gradle.properties` and inserts a new
+   `## [<version>]` section under `## [Unreleased]` in `CHANGELOG.md`.
+2. Fill in the new CHANGELOG section and commit `gradle.properties` +
+   `CHANGELOG.md` (through a pull request when the branch is protected).
+3. Tag the merged commit and push the tag:
+   ```
+   git tag v1.1.0
+   git push origin v1.1.0
+   ```
+4. The workflow validates that the tag matches `gradle.properties`, builds
+   the jars from the **tagged commit**, and publishes the GitHub Release
+   using the `## [<version>]` section of the CHANGELOG as the body (falling
+   back to auto-generated notes when the section is missing).
+
+Manual re-runs are possible from the Actions tab (`workflow_dispatch`) by
+providing an existing tag.
+
 ## Development environment
 
 - JDK 17 (Temurin recommended).

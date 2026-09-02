@@ -370,10 +370,19 @@ Every push and pull request is verified by GitHub Actions
   cache but never write to it.
 - Compilable jars are uploaded as **build artifacts** for manual testing.
 
-Tagging `vX.Y.Z` (with the same version as `gradle.properties`) triggers
-[.github/workflows/release.yml](.github/workflows/release.yml), which builds
-the jars and drafts a **GitHub Release** with the Fabric and Forge artifacts
-attached.
+Releases are driven by git tags. To cut one:
+
+```bash
+./scripts/release.sh 1.1.0      # bumps gradle.properties + adds the CHANGELOG section
+# edit the new CHANGELOG section, commit via PR, then:
+git tag v1.1.0 && git push origin v1.1.0
+```
+
+The tag triggers [.github/workflows/release.yml](.github/workflows/release.yml),
+which validates the version, builds the jars **from the tagged commit** and
+publishes a **GitHub Release** — its body is the `## [vX.Y.Z]` section of
+`CHANGELOG.md` (auto-generated notes as fallback). Full details in
+[CONTRIBUTING.md](CONTRIBUTING.md#releasing).
 
 Dependency bumps are handled by [Dependabot](.github/dependabot.yml) (weekly
 checks for both GitHub Actions and Gradle).
