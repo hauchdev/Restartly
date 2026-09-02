@@ -1,0 +1,84 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test (${{ matrix.module }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [common, fabric, forge]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up build environment
+        uses: ./.github/actions/setup-build
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Compile and test
+        # Each module is built independently in its own worker so the heavy
+        # Minecraft pipelines (Loom remapping, NeoForm recompilation) never
+        # compete for the 7 GB runner memory at the same time.
+        run: ./gradlew :${{ matrix.module }}:build --no-daemon --stacktrace
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.module }}
+          path: ${{ matrix.module }}/build/reports/tests/**
+          if-no-files-found: ignore
+
+  artifacts:
+    name: Package build artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up build environment
+        uses: ./.github/actions/setup-build
+
+      - name: Assemble release jars
+        run: ./gradlew :fabric:build :forge:build --no-daemon
+
+      - name: Upload Fabric jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: restartly-fabric
+          path: fabric/build/libs/restartly-fabric-*.jar
+          if-no-files-found: error
+
+      - name: Upload Forge jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: restartly-forge
+          # The shaded jar (-all) is the production Forge artifact; it carries
+          # the relocated SnakeYAML dependency and is reobfuscated to SRG.
+          path: |
+            forge/build/libs/restartly-forge-*-all.jar
+            forge/build/libs/restartly-forge-*-sources.jar
+            forge/build/libs/restartly-forge-*-javadoc.jar
+          if-no-files-found: error

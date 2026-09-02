@@ -1,0 +1,313 @@
+# ============================================================================
+#  RESTARTLY — server restart management
+#  Docs: https://github.com/hauchdev/Restartly
+# ============================================================================
+version: 1
+
+# ----------------------------------------------------------------------------
+# GENERAL
+# ----------------------------------------------------------------------------
+general:
+  enabled: true
+  debug: false
+  timezone: "Europe/Madrid"
+  language: "en_US"
+  check_updates: true
+  metrics: false
+  # What to do when an internal error occurs: "log" (default) | "warn"
+  on_error: "log"
+
+# ----------------------------------------------------------------------------
+# COUNTDOWN — the default length and the warning steps
+# ----------------------------------------------------------------------------
+countdown:
+  default: "10m"
+  # Steps are ordered from longest to shortest. Each step fires the matching
+  # warning (below). You may add or remove as many steps as you want.
+  steps:
+    - "30m"
+    - "15m"
+    - "10m"
+    - "5m"
+    - "3m"
+    - "2m"
+    - "1m"
+    - "30s"
+    - "10s"
+    - "5s"
+    - "4s"
+    - "3s"
+    - "2s"
+    - "1s"
+
+# ----------------------------------------------------------------------------
+# SCHEDULES — daily, weekly, interval, dates, cron; several can coexist.
+# Each schedule can override countdown, warnings, conditions, smart restart,
+# maintenance and priority.
+# ----------------------------------------------------------------------------
+schedule:
+  - id: daily
+    type: daily              # daily | weekly | interval | dates | cron
+    time: "04:00"
+    enabled: true
+    priority: 0
+    description: "Daily maintenance restart at 04:00"
+
+  # - id: evening
+  #   type: daily
+  #   times: ["18:00", "22:00"]
+  #   countdown: "5m"
+  #
+  # - id: weekend
+  #   type: weekly
+  #   weekly:
+  #     saturday: ["06:00"]
+  #     sunday: ["06:00"]
+  #
+  # - id: every_6h
+  #   type: interval
+  #   interval: "6h"
+  #   countdown: "30s"
+  #
+  # - id: new_year
+  #   type: dates
+  #   dates: ["2026-01-01 04:00"]
+  #
+  # - id: cron_test
+  #   type: cron
+  #   cron: "0 4 * * *"
+
+# ----------------------------------------------------------------------------
+# WARNINGS — each warning has its own combination of actions.
+# `time` must be one of the steps above (or any duration <= countdown).
+# ----------------------------------------------------------------------------
+warnings:
+  - time: "30m"
+    chat:
+      enabled: true
+      message: "<yellow>⚠ Server restarting in {time}"
+
+  - time: "10m"
+    chat:
+      enabled: true
+      message: "<gold>⚠ Server restarting in {time}"
+    sound:
+      enabled: true
+      sound: "minecraft:block.note_block.bell"
+      volume: 1.0
+      pitch: 1.0
+
+  - time: "5m"
+    title:
+      enabled: true
+      title: "<red>SERVER RESTART"
+      subtitle: "<yellow>{time} remaining"
+      fade_in: 10
+      stay: 120
+      fade_out: 20
+    bossbar:
+      enabled: true
+      color: "RED"
+      overlay: "PROGRESS"
+      message: "Restarting in {time}"
+    sound:
+      enabled: true
+      sound: "minecraft:block.note_block.bell"
+      volume: 1.0
+      pitch: 1.2
+
+  - time: "1m"
+    actionbar:
+      enabled: true
+      message: "<red>Restarting in <white>{time}"
+    chat:
+      enabled: true
+      message: "{prefix}<yellow>Restarting in {time}."
+
+  - time: "10s"
+    title:
+      enabled: true
+      title: "<red>{seconds}"
+      subtitle: "<gray>Server restarting"
+      fade_in: 0
+      stay: 40
+      fade_out: 10
+
+  - time: "5s"
+    sound:
+      enabled: true
+      sound: "minecraft:block.note_block.pling"
+      volume: 1.0
+      pitch: 1.0
+
+  - time: "1s"
+    sound:
+      enabled: true
+      sound: "minecraft:entity.experience_orb.pickup"
+      volume: 1.0
+      pitch: 2.0
+
+# ----------------------------------------------------------------------------
+# TITLES — global defaults (warnings can override each field)
+# ----------------------------------------------------------------------------
+title:
+  enabled: true
+  fade_in: 10
+  stay: 60
+  fade_out: 20
+  title: "<red>SERVER RESTART"
+  subtitle: "<yellow>Restarting in {time}"
+
+# ----------------------------------------------------------------------------
+# ACTIONBAR
+# ----------------------------------------------------------------------------
+actionbar:
+  enabled: true
+  message: "<red>Restarting in <white>{time}"
+  update_interval: "1s"
+
+# ----------------------------------------------------------------------------
+# BOSSBAR
+# ----------------------------------------------------------------------------
+bossbar:
+  enabled: true
+  color: "RED"        # BLUE | GREEN | PINK | PURPLE | RED | WHITE | YELLOW
+  overlay: "PROGRESS" # PROGRESS | NOTCHED_6 | NOTCHED_10 | NOTCHED_12 | NOTCHED_20
+  message: "Restarting in {time}"
+  progress: "countdown"
+
+# ----------------------------------------------------------------------------
+# CHAT — prefix and all chat messages ({prefix} expands to the prefix)
+# ----------------------------------------------------------------------------
+chat:
+  prefix: "<dark_gray>[<red>Restartly<dark_gray>] "
+  messages:
+    restart_started: "{prefix}<yellow>Restarting in {time}."
+    restart_cancelled: "{prefix}<green>Restart cancelled."
+    restart_now: "{prefix}<red>Server restarting now."
+    restart_waiting: "{prefix}<yellow>Conditions not met. Waiting to restart the server..."
+    restart_completed: "{prefix}<green>Server restart completed."
+    next_restart: "{prefix}<yellow>Next restart: {time} ({timezone})."
+    no_restart_scheduled: "{prefix}<gray>No restart is currently scheduled."
+    maintenance_active: "{prefix}<red>Maintenance mode is now active."
+    maintenance_disabled: "{prefix}<green>Maintenance mode is now disabled."
+    reload_success: "{prefix}<green>Configuration reloaded. {count} schedules active."
+
+# ----------------------------------------------------------------------------
+# KICK — when and how players are kicked before the restart
+# when: NONE | COUNTDOWN_START | MAINTENANCE_ACTIVATE | SHUTDOWN
+# ----------------------------------------------------------------------------
+kick:
+  enabled: true
+  when: "SHUTDOWN"
+  delay: "10s"
+  message: |
+    <red>Server restarting.
+
+    <gray>Please reconnect shortly.
+
+# ----------------------------------------------------------------------------
+# MAINTENANCE
+# ----------------------------------------------------------------------------
+maintenance:
+  enabled: true
+  activate_before: "5m"
+  kick_players: false
+  kick_message: "<red>Server restarting."
+  block_join: true
+  auto_disable_on_restart: true
+
+# ----------------------------------------------------------------------------
+# CONDITIONS — checked before the restart is executed
+# on_failure: CANCEL | RESTART | WAIT
+# ----------------------------------------------------------------------------
+conditions:
+  min_players: 0
+  max_players: -1           # -1 = unlimited
+  require_empty: false
+  require_tps_above: 0.0
+  require_no_combat: false
+  require_no_active_event: false
+  combat_timeout: "30s"
+  on_failure: "CANCEL"
+
+  # Automatic cancellation rules (checked at countdown end and while waiting)
+  cancel_if_players_above: -1
+  cancel_if_event_active: false
+  cancel_if_tps_below: 0.0
+
+# ----------------------------------------------------------------------------
+# SMART RESTART — wait until the server is restartable
+# max_delay_action: RESTART | CANCEL | FORCE
+# ----------------------------------------------------------------------------
+smart_restart:
+  enabled: false
+  wait_for_empty: true
+  max_delay: "2h"
+  retry_interval: "30s"
+  min_players: 0
+  max_players: 0
+  max_delay_action: "RESTART"
+
+# ----------------------------------------------------------------------------
+# COMMANDS — executed at lifecycle points and per countdown step
+# (CONSOLE commands; prefix "/" is optional). Never place anything here you
+# wouldn't type yourself.
+# ----------------------------------------------------------------------------
+commands:
+  on_restart_start:
+    - "say Restart sequence started"
+  on_30m:
+    - "say Restart in 30 minutes"
+  on_10m:
+    - "say Restart in 10 minutes"
+  on_5m:
+    - "save-all"
+  on_1m:
+    - "say Restart in 1 minute"
+  on_restart:
+    - "save-all"
+  on_cancel:
+    - "say Restart cancelled"
+  on_waiting:
+    - "say Waiting to restart..."
+
+# ----------------------------------------------------------------------------
+# INTEGRATIONS — all optional, none mandatory
+# ----------------------------------------------------------------------------
+integrations:
+  webhook:
+    enabled: false
+    url: ""
+    retries: 2
+    events:
+      restart_scheduled: true
+      restart_started: true
+      restart_warning: true
+      restart_completed: true
+      restart_cancelled: true
+      restart_waiting: true
+
+# ----------------------------------------------------------------------------
+# PERMISSIONS — node per feature (LuckPerms-style permission providers can
+# hook in; vanilla op levels are the fallback)
+# ----------------------------------------------------------------------------
+permissions:
+  admin: "restartly.admin"
+  restart: "restartly.restart"
+  cancel: "restartly.cancel"
+  status: "restartly.status"
+  reload: "restartly.reload"
+  schedule: "restartly.schedule"
+  maintenance: "restartly.maintenance"
+  bypass: "restartly.bypass"
+  maintenance.bypass: "restartly.maintenance.bypass"
+  debug: "restartly.debug"
+
+# ----------------------------------------------------------------------------
+# LOGGING
+# ----------------------------------------------------------------------------
+logging:
+  log_schedule_fires: true
+  log_warning_fires: true
+  log_webhook_responses: false

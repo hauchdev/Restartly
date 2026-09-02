@@ -1,0 +1,50 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to release (e.g. v1.0.0)
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up build environment
+        uses: ./.github/actions/setup-build
+
+      - name: Validate version matches the tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PROP_VERSION="$(sed -n 's/^version=\(.*\)$/\1/p' gradle.properties)"
+          echo "Tag version: ${TAG_VERSION}"
+          echo "gradle.properties version: ${PROP_VERSION}"
+          if [ "${TAG_VERSION}" != "${PROP_VERSION}" ]; then
+            echo "::error::Tag '${GITHUB_REF_NAME}' does not match version '${PROP_VERSION}' in gradle.properties"
+            exit 1
+          fi
+
+      - name: Build release jars
+        run: ./gradlew :common:build :fabric:build :forge:build --no-daemon
+
+      - name: Draft GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            fabric/build/libs/restartly-fabric-*.jar
+            forge/build/libs/restartly-forge-*-all.jar

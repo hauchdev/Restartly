@@ -1,0 +1,65 @@
+plugins {
+    id 'multiloader-loader'
+    id 'net.neoforged.moddev.legacyforge'
+    id 'com.gradleup.shadow' version '8.3.6'
+}
+
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+
+    validateAccessTransformers = true
+
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers = ["src/main/resources/META-INF/accesstransformer.cfg"]
+    }
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
+    runs {
+        client {
+            client()
+        }
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+        server {
+            server()
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets.main.resources.srcDir 'src/generated/resources'
+
+dependencies {
+    compileOnly project(":common")
+    implementation 'org.yaml:snakeyaml:2.2'
+}
+
+// SnakeYAML is not part of the vanilla/Forge runtime; shade and relocate it
+// into the mod jar so production servers work without extra files. Shadow is
+// applied before reobfuscation, per ModDevGradle's documented pattern: the
+// plain `jar` task stays enabled (its output moves to build/devlibs) and the
+// shaded jar gets its own classifier, so the two never write to the same file.
+shadowJar {
+    archiveClassifier.set('all')
+    relocate('org.yaml.snakeyaml', 'dev.hauch.restartly.lib.snakeyaml')
+}
+
+obfuscation {
+    reobfuscate(tasks.named('shadowJar'), sourceSets.main)
+}
+
+// The shaded jar replaces the plain one as the production artifact: make sure
+// `build` always produces the reobfuscated, shaded jar.
+tasks.named('build') {
+    dependsOn(tasks.named('reobfShadowJar'))
+}

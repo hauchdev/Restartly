@@ -1,0 +1,50 @@
+name: Setup Build Environment
+
+description: >
+  Configures the JDK, sets up Gradle with dependency caching, and caches the
+  platform-specific Minecraft artifacts (Fabric Loom cache, NeoForm/Forge
+  remapped jars) so repeated CI runs do not re-download or re-process
+  Minecraft.
+
+inputs:
+  java-version:
+    description: JDK version to install.
+    required: false
+    default: "17"
+  cache-read-only:
+    description: >
+      Set to true for pull request runs so the cache is restored but never
+      written (pull requests must not pollute the shared cache).
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: ${{ inputs.java-version }}
+
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        # Wrapper checksum verification keeps CI safe against tampered
+        # gradle-wrapper.jar files.
+        validate-wrapper: true
+        cache-read-only: ${{ inputs.cache-read-only }}
+
+    - name: Cache Minecraft artifacts
+      uses: actions/cache@v4
+      with:
+        path: |
+          .gradle/loom-cache
+          .gradle/neoformed
+          common/.gradle/loom-cache
+          fabric/.gradle/loom-cache
+          forge/.gradle/loom-cache
+          forge/.gradle/neoformed
+        key: minecraft-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'common/build.gradle', 'fabric/build.gradle', 'forge/build.gradle', 'buildSrc/**') }}
+        restore-keys: |
+          minecraft-${{ runner.os }}-

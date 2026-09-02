@@ -1,0 +1,27 @@
+{
+    "schemaVersion": 1,
+    "id": "restartly",
+    "version": "${version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "${mod_author}"
+    ],
+    "contact": {
+        "homepage": "https://github.com/hauchdev/Restartly",
+        "sources": "https://github.com/hauchdev/Restartly"
+    },
+    "license": "${license}",
+    "environment": "server",
+    "entrypoints": {
+        "main": [
+            "dev.hauch.restartly.RestartlyFabric"
+        ]
+    },
+    "depends": {
+        "fabricloader": ">=0.16",
+        "fabric": "*",
+        "minecraft": "${minecraft_version}",
+        "java": ">=17"
+    }
+}
