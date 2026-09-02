@@ -41,7 +41,7 @@ sourceSets.main.resources.srcDir 'src/generated/resources'
 
 dependencies {
     compileOnly project(":common")
-    implementation 'org.yaml:snakeyaml:2.2'
+    implementation 'org.yaml:snakeyaml:2.6'
 }
 
 // SnakeYAML is not part of the vanilla/Forge runtime; shade and relocate it
