@@ -22,7 +22,7 @@ dependencies {
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     implementation 'org.yaml:snakeyaml:2.2'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // The legacyForge dev environment adds Minecraft to the main compile
     // classpath as a file collection; mirror it for the test source set.
