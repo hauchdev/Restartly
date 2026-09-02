@@ -38,7 +38,7 @@ jobs:
           fi
 
       - name: Build release jars
-        run: ./gradlew :common:build :fabric:build :forge:build --no-daemon
+        run: sh gradlew :common:build :fabric:build :forge:build --no-daemon
 
       - name: Draft GitHub Release
         uses: softprops/action-gh-release@v2

@@ -51,6 +51,11 @@ add the method to `RestartPlatform` and implement it in both loaders.
 3. Update `CHANGELOG.md` under "Unreleased"/the next version.
 4. Open a pull request with a short summary of the *why*.
 
+> **Git on Windows:** CI runs `sh gradlew` so a missing executable bit on the
+> wrapper never breaks the build, but please keep it healthy for others too —
+> `git update-index --chmod=+x gradlew` before committing avoids
+> `Permission denied` errors for contributors on Linux/macOS.
+
 ## Development environment
 
 - JDK 17 (Temurin recommended).

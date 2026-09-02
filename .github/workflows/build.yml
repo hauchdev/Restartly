@@ -37,7 +37,9 @@ jobs:
         # Each module is built independently in its own worker so the heavy
         # Minecraft pipelines (Loom remapping, NeoForm recompilation) never
         # compete for the 7 GB runner memory at the same time.
-        run: ./gradlew :${{ matrix.module }}:build --no-daemon --stacktrace
+        # `sh gradlew` (instead of ./gradlew) keeps CI working even when the
+        # wrapper was committed from Windows without the executable bit.
+        run: sh gradlew :${{ matrix.module }}:build --no-daemon --stacktrace
 
       - name: Upload test results
         if: always()
@@ -62,7 +64,7 @@ jobs:
         uses: ./.github/actions/setup-build
 
       - name: Assemble release jars
-        run: ./gradlew :fabric:build :forge:build --no-daemon
+        run: sh gradlew :fabric:build :forge:build --no-daemon
 
       - name: Upload Fabric jar
         uses: actions/upload-artifact@v5
