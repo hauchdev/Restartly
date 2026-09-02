@@ -26,7 +26,7 @@ jobs:
         module: [common, fabric, forge]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up build environment
         uses: ./.github/actions/setup-build
@@ -41,7 +41,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results-${{ matrix.module }}
           path: ${{ matrix.module }}/build/reports/tests/**
@@ -56,7 +56,7 @@ jobs:
       contents: read
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up build environment
         uses: ./.github/actions/setup-build
@@ -65,14 +65,14 @@ jobs:
         run: ./gradlew :fabric:build :forge:build --no-daemon
 
       - name: Upload Fabric jar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: restartly-fabric
           path: fabric/build/libs/restartly-fabric-*.jar
           if-no-files-found: error
 
       - name: Upload Forge jar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: restartly-forge
           # The shaded jar (-all) is the production Forge artifact; it carries

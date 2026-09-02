@@ -21,8 +21,13 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Validate Gradle wrapper checksums
+      # Gradle wrapper checksum verification keeps CI safe against tampered
+      # gradle-wrapper.jar files.
+      uses: gradle/wrapper-validation-action@v3
+
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: temurin
         java-version: ${{ inputs.java-version }}
@@ -30,13 +35,10 @@ runs:
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
-        # Wrapper checksum verification keeps CI safe against tampered
-        # gradle-wrapper.jar files.
-        validate-wrapper: true
         cache-read-only: ${{ inputs.cache-read-only }}
 
     - name: Cache Minecraft artifacts
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           .gradle/loom-cache
